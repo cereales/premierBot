@@ -2,6 +2,7 @@
 config.json
 tokens.json
 src/test/
+classes
 
 # music files
 *.mp3
@@ -44,4 +45,4 @@ src-old/main/java/net/dv8tion/jda/ratelimit/Bucket.java
 src-old/main/java/net/dv8tion/jda/ratelimit/RateLimitControl.java
 
 # private token
-src/main/java/fr/PrivateTokenised.java
+src/main/ressource/META-INF
