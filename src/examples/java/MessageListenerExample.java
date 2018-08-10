@@ -136,7 +136,7 @@ public class MessageListenerExample extends PrivateTokenised
             PrivateChannel privateChannel = event.getPrivateChannel();
 
             if (!bot) {
-                word = msg.split(" ")[0];
+                word = msg.split(" ")[0].toLowerCase();
                 privateChannel.sendMessage("Nouveau mot : " + word).queue();
                 n = 10;
                 clear = new String[word.length()];
@@ -178,7 +178,9 @@ public class MessageListenerExample extends PrivateTokenised
         else if (msg.equals("!pendu") || msg.length() == 1)
         {
             if (n >= 0) {
-                if (msg.length() == 1) {
+                if (msg.length() == 1)
+                {
+                    msg = msg.toLowerCase();
                     tmp = clear[0];
                     boolean found = false;
                     for (int i = 1; i < word.length(); ++i) {
@@ -191,15 +193,17 @@ public class MessageListenerExample extends PrivateTokenised
                     if (!found)
                         --n;
                 }
-                if (n <= 0) {
-                    channel.sendMessage("You lost. Right word was *" + word + "*.").queue();
+                if (n <= 0)
+                {
+                    channel.sendMessage("Perdu. Le bon mot etait *" + word + "*.").queue();
                     word = "";
                     tmp = "";
                     clear = new String[0];
                     n = -1;
                 }
-                else {
-                    channel.sendMessage("<Current word (" + n + " more try)> " + tmp).queue();
+                else
+                {
+                    channel.sendMessage("<" + n + " chances)> " + tmp).queue();
 
                     boolean gagne = true;
                     for (int i = 1; i < word.length(); ++i) {
@@ -207,7 +211,7 @@ public class MessageListenerExample extends PrivateTokenised
                             gagne = false;
                     }
                     if (gagne) {
-                        channel.sendMessage("You won.").queue();
+                        channel.sendMessage("Gagné!").queue();
                         word = "";
                         tmp = "";
                         clear = new String[0];
