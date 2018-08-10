@@ -27,6 +27,7 @@ import net.dv8tion.jda.core.exceptions.RateLimitedException;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 import javax.security.auth.login.LoginException;
+import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 
@@ -221,7 +222,24 @@ public class MessageListenerExample extends PrivateTokenised
             }
             else
             {
+                try {
+                    word = game.tests.DataBase.getWord();
+                    n = 10;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    n = -1;
+                }
+                clear = new String[word.length()];
+                clear[0] = word.substring(0, 1);
+                tmp = clear[0];
+                for (int i = 1; i < word.length(); ++i) {
+                    clear[i] = "\\_";
+                    tmp += " " + clear[i];
+                }
+                System.out.println("New random word : " + word);
+
                 channel.sendMessage("Pas de mot en cours.").queue();
+                onMessageReceived(event);
             }
         }
         else if (msg.equals("!roll"))
