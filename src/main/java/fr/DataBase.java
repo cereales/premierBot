@@ -21,7 +21,7 @@ public class DataBase {
 
         FileInputStream fis = null;
         FileChannel fc = null;
-        String dataFile = "test";
+        String dataFile = "src/main/java/fr/database.txt";
         fis = new FileInputStream(new File(dataFile));
         fc = fis.getChannel();
         int size = (int)fc.size();

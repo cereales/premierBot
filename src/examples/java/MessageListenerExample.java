@@ -24,10 +24,10 @@ import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.exceptions.PermissionException;
 import net.dv8tion.jda.core.exceptions.RateLimitedException;
-import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 import javax.security.auth.login.LoginException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Random;
 
@@ -64,6 +64,10 @@ public class MessageListenerExample extends PrivateTokenised
             // you use buildBlocking in a thread that has the possibility of being interrupted (async thread usage and interrupts)
             e.printStackTrace();
         }
+        setUnused();
+    }
+
+    private static void setUnused() {
         word = "";
         tmp = "";
         clear = new String[0];
@@ -138,15 +142,8 @@ public class MessageListenerExample extends PrivateTokenised
 
             if (!bot) {
                 word = msg.split(" ")[0].toLowerCase();
-                privateChannel.sendMessage("Nouveau mot : " + word).queue();
-                n = 10;
-                clear = new String[word.length()];
-                clear[0] = word.substring(0, 1);
-                tmp = clear[0];
-                for (int i = 1; i < word.length(); ++i) {
-                    clear[i] = "\\_";
-                    tmp += " " + clear[i];
-                }
+                privateChannel.sendMessage("Nouveau mot : " + word.toLowerCase()).queue();
+                setNewWord(word, channel);
             }
 
             System.out.printf("[PRIV]<%s>: %s\n", author.getName(), msg);
@@ -197,10 +194,7 @@ public class MessageListenerExample extends PrivateTokenised
                 if (n <= 0)
                 {
                     channel.sendMessage("Perdu. Le bon mot etait *" + word + "*.").queue();
-                    word = "";
-                    tmp = "";
-                    clear = new String[0];
-                    n = -1;
+                    setUnused();
                 }
                 else
                 {
@@ -213,10 +207,7 @@ public class MessageListenerExample extends PrivateTokenised
                     }
                     if (gagne) {
                         channel.sendMessage("Gagné!").queue();
-                        word = "";
-                        tmp = "";
-                        clear = new String[0];
-                        n = -1;
+                        setUnused();
                     }
                 }
             }
@@ -224,17 +215,10 @@ public class MessageListenerExample extends PrivateTokenised
             {
                 try {
                     word = game.tests.DataBase.getWord();
-                    n = 10;
+                    setNewWord(word, channel);
                 } catch (IOException e) {
                     e.printStackTrace();
                     n = -1;
-                }
-                clear = new String[word.length()];
-                clear[0] = word.substring(0, 1);
-                tmp = clear[0];
-                for (int i = 1; i < word.length(); ++i) {
-                    clear[i] = "\\_";
-                    tmp += " " + clear[i];
                 }
                 System.out.println("New random word : " + word);
 
@@ -384,5 +368,33 @@ public class MessageListenerExample extends PrivateTokenised
             channel.sendMessage("hey salut").queue();
         }
         */
+    }
+
+    private void setNewWord(String word, MessageChannel channel) {
+        n = 10;
+        clear = new String[word.length()];
+        clear[0] = word.substring(0, 1);
+        tmp = clear[0];
+        byte[] letters = word.getBytes(StandardCharsets.UTF_8);
+        int byteIndex = (letters[0] < 0) ? 2 : 1;
+        for (int stringIndex = 1; stringIndex < word.length(); ++stringIndex) {
+            byte letter = letters[byteIndex];
+            if (97 <= letter && letter <= 122)
+            {
+                clear[stringIndex] = "\\_";
+            }
+            else
+            {
+                if (letter < 0)
+                    ++byteIndex;
+                clear[stringIndex] = word.substring(stringIndex, stringIndex + 1);
+                channel.sendMessage("Caractère '" + clear[stringIndex] + "' non reconnu.").queue();
+            }
+            tmp += " " + clear[stringIndex];
+            ++byteIndex;
+        }
+        // (byte & 0xff) to see real code
+        // ((char) byte) to print byte
+        // (new String(byte[] {byte1, byte2})) to print composed byte
     }
 }
