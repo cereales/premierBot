@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package game.tests;
+package fr;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -41,6 +41,9 @@ public class DataBase {
             tmp[i-n] = tabByte[i];
 
 
-        return new String(tmp);
+        String res = new String(tmp);
+        if (res.length() <= 1)
+            throw new IOException("Mot '" + res + "' trop court");
+        return res;
     }
 }

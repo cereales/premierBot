@@ -214,7 +214,7 @@ public class MessageListenerExample extends PrivateTokenised
             else
             {
                 try {
-                    word = game.tests.DataBase.getWord();
+                    word = fr.DataBase.getWord();
                     setNewWord(word, channel);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -223,7 +223,8 @@ public class MessageListenerExample extends PrivateTokenised
                 System.out.println("New random word : " + word);
 
                 channel.sendMessage("Pas de mot en cours.").queue();
-                onMessageReceived(event);
+                if (n >= 0)
+                    onMessageReceived(event);
             }
         }
         else if (msg.equals("!roll"))
