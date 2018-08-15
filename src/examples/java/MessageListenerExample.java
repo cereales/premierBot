@@ -14,29 +14,36 @@
  * limitations under the License.
  */
 
+import fr.DataBase;
+import fr.DatabaseUsers;
 import fr.PrivateTokenised;
 import net.dv8tion.jda.client.entities.Group;
 import net.dv8tion.jda.core.AccountType;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.JDABuilder;
-import net.dv8tion.jda.core.Permission;
 import net.dv8tion.jda.core.entities.*;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.core.exceptions.PermissionException;
-import net.dv8tion.jda.core.exceptions.RateLimitedException;
+import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 import javax.security.auth.login.LoginException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class MessageListenerExample extends PrivateTokenised
 {
     private static String word;
     private static String tmp;
     private static String[] clear;
+    private static String wrong;
     private static int n;
+    private static Set<String> letterProposersId;
+    private static String wordProposerId;
+
+    private static DatabaseUsers databaseUsers = new DatabaseUsers();
+
+
+
     /**
      * This is the method where the program starts.
      */
@@ -71,7 +78,9 @@ public class MessageListenerExample extends PrivateTokenised
         word = "";
         tmp = "";
         clear = new String[0];
+        wrong = "";
         n = -1;
+        wordProposerId = "";
     }
 
     /**
@@ -81,13 +90,13 @@ public class MessageListenerExample extends PrivateTokenised
      *  a method from a super class properly. You should do this every time you override a method!
      *
      * As stated above, this method is overriding a hook method in the
-     * {@link net.dv8tion.jda.core.hooks.ListenerAdapter ListenerAdapter} class. It has convience methods for all JDA events!
+     * {@link ListenerAdapter ListenerAdapter} class. It has convience methods for all JDA events!
      * Consider looking through the events it offers if you plan to use the ListenerAdapter.
      *
      * In this example, when a message is received it is printed to the console.
      *
      * @param event
-     *          An event containing information about a {@link net.dv8tion.jda.core.entities.Message Message} that was
+     *          An event containing information about a {@link Message Message} that was
      *          sent in a channel.
      */
     @Override
@@ -103,6 +112,7 @@ public class MessageListenerExample extends PrivateTokenised
         Message message = event.getMessage();           //The message that was received.
         MessageChannel channel = event.getChannel();    //This is the MessageChannel that the message was sent to.
                                                         //  This could be a TextChannel, PrivateChannel, or Group!
+        String user = author.getId();
 
         String msg = message.getContentDisplay();              //This returns a human readable version of the Message. Similar to
                                                         // what you would see in the client.
@@ -144,6 +154,7 @@ public class MessageListenerExample extends PrivateTokenised
                 word = msg.split(" ")[0].toLowerCase();
                 privateChannel.sendMessage("Nouveau mot : " + word.toLowerCase()).queue();
                 setNewWord(word, channel);
+                wordProposerId = user;
             }
 
             System.out.printf("[PRIV]<%s>: %s\n", author.getName(), msg);
@@ -175,9 +186,25 @@ public class MessageListenerExample extends PrivateTokenised
         }
         else if (msg.equals("!pendu") || msg.length() == 1)
         {
+            databaseUsers.contains(user, author.getName());
+            if (n < 0) {
+                try {
+                    word = DataBase.getWord();
+                    setNewWord(word, channel);
+                    System.out.println("New random word : " + word);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    setUnused();
+                    channel.sendMessage("Echec de génération du mot. Essayez à nouveau.").queue();
+                }
+
+                channel.sendMessage("Pas de mot en cours.").queue();
+            }
             if (n >= 0) {
                 if (msg.length() == 1)
                 {
+                    letterProposersId.add(user);
+
                     msg = msg.toLowerCase();
                     tmp = clear[0];
                     boolean found = false;
@@ -189,16 +216,20 @@ public class MessageListenerExample extends PrivateTokenised
                         tmp += " " + clear[i];
                     }
                     if (!found)
+                    {
                         --n;
+                        wrong += msg;
+                    }
                 }
                 if (n <= 0)
                 {
                     channel.sendMessage("Perdu. Le bon mot etait *" + word + "*.").queue();
+                    //TODO : add victory to proposer
                     setUnused();
                 }
                 else
                 {
-                    channel.sendMessage("<" + n + " chances)> " + tmp).queue();
+                    channel.sendMessage("<" + n + " chances, (" + wrong + ")> " + tmp).queue();
 
                     boolean gagne = true;
                     for (int i = 1; i < word.length(); ++i) {
@@ -207,25 +238,17 @@ public class MessageListenerExample extends PrivateTokenised
                     }
                     if (gagne) {
                         channel.sendMessage("Gagné!").queue();
+                        if (!wordProposerId.equals(user))
+                            databaseUsers.addPenduVictory(user);
+                        channel.sendMessage(databaseUsers.printScores(user)).queue();
                         setUnused();
                     }
                 }
             }
-            else
-            {
-                try {
-                    word = fr.DataBase.getWord();
-                    setNewWord(word, channel);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    n = -1;
-                }
-                System.out.println("New random word : " + word);
-
-                channel.sendMessage("Pas de mot en cours.").queue();
-                if (n >= 0)
-                    onMessageReceived(event);
-            }
+        }
+        else if (msg.equals("!score"))
+        {
+            channel.sendMessage(databaseUsers.printScores("")).queue();
         }
         else if (msg.equals("!roll"))
         {
@@ -255,6 +278,7 @@ public class MessageListenerExample extends PrivateTokenised
                 "*!ping*\tEssaye pour voir\n" +
                 "*!roll*\tLance un dé 6\n" +
                 "*!pendu*\tJouer au pendu\n" +
+                "*!score*\tAfficher les scores\n" +
                 "*\\o/*\tSache qu'il en faut peu pour être heureux").queue();
         }
         /*
@@ -267,6 +291,8 @@ public class MessageListenerExample extends PrivateTokenised
 
     private void setNewWord(String word, MessageChannel channel) {
         n = 10;
+        wrong = "";
+        letterProposersId = new TreeSet();
         clear = new String[word.length()];
         clear[0] = word.substring(0, 1);
         tmp = clear[0];
