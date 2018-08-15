@@ -153,6 +153,7 @@ public class MessageListenerExample extends PrivateTokenised
             if (!bot) {
                 word = msg.split(" ")[0].toLowerCase();
                 privateChannel.sendMessage("Nouveau mot : " + word.toLowerCase()).queue();
+                databaseUsers.addUser(user, author.getName());
                 setNewWord(word, channel);
                 wordProposerId = user;
             }
@@ -226,6 +227,9 @@ public class MessageListenerExample extends PrivateTokenised
                     channel.sendMessage("Perdu. Le bon mot etait *" + word + "*.").queue();
                     if (!wordProposerId.equals(""))
                         databaseUsers.addPenduVictory(wordProposerId);
+                    for (String id : letterProposersId) {
+                        databaseUsers.addPenduDefeat(id);
+                    }
                     channel.sendMessage(databaseUsers.printScores(wordProposerId)).queue();
                     setUnused();
                 }

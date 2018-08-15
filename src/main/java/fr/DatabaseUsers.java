@@ -8,10 +8,7 @@ package fr;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  *
@@ -21,11 +18,11 @@ public class DatabaseUsers {
     private Map<String, List<String>> users;
     private final String usersFile = "src/main/java/fr/databaseUsers.txt";
 
-    private static final String DATABASE_STRUCT = "LOGIN;NAME;VICTOIRES;USERNAME";
+    private static final String DATABASE_STRUCT = "LOGIN;NAME;VICTOIRES;USERNAME;DEFAITES";
 
     public DatabaseUsers() {
         this.users = new HashMap();
-        fillDatabase(users, usersFile, 4);
+        fillDatabase(users, usersFile, 5);
     }
 
     /**
@@ -41,6 +38,7 @@ public class DatabaseUsers {
             l.add(name);
             l.add("0");
             l.add(name);
+            l.add("0");
             
             users.put(id, l);
             refreshDataFile();
@@ -85,6 +83,9 @@ public class DatabaseUsers {
                                 break;
                             case 3:
                                 l.add(columns[1]);
+                                break;
+                            case 4:
+                                l.add("0");
                                 break;
                             default:
                                 l.add("");
@@ -187,7 +188,7 @@ public class DatabaseUsers {
             res += user;
             if (user.equals(winner))
                 res += "**";
-            res += " victoires";
+            res += " victoires, " + list.get(3) + " defaites";
         }
         return res;
     }
@@ -201,5 +202,10 @@ public class DatabaseUsers {
             return name;
         }
         return "";
+    }
+
+    public void addPenduDefeat(String id) {
+        users.get(id).set(3, String.valueOf(new Integer(users.get(id).get(3)) + 1));
+        refreshDataFile();
     }
 }
