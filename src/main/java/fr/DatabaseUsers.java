@@ -21,11 +21,11 @@ public class DatabaseUsers {
     private Map<String, List<String>> users;
     private final String usersFile = "src/main/java/fr/databaseUsers.txt";
 
-    private static final String DATABASE_STRUCT = "LOGIN;NAME;VICTOIRES";
+    private static final String DATABASE_STRUCT = "LOGIN;NAME;VICTOIRES;USERNAME";
 
     public DatabaseUsers() {
         this.users = new HashMap();
-        fillDatabase(users, usersFile);
+        fillDatabase(users, usersFile, 4);
     }
 
     /**
@@ -40,6 +40,7 @@ public class DatabaseUsers {
             // fields of a data input
             l.add(name);
             l.add("0");
+            l.add(name);
             
             users.put(id, l);
             refreshDataFile();
@@ -47,20 +48,7 @@ public class DatabaseUsers {
         }
         return false;
     }
-    
-    /**
-     * Checks if the user is in database.
-     * @param id
-     * @param name
-     * @return
-     */
-    public boolean contains(String id, String name) {
-        if (users.containsKey(id))
-            return true;
-        addUser(id, name);
-        return false;
-    }
-    
+
     
     
     
@@ -68,9 +56,10 @@ public class DatabaseUsers {
     /**
      * Fill the given database with the data from the file.
      * @param database
-     * @param dataFile 
+     * @param dataFile
+     * @param nb_columns nb total de colonnes dans database
      */
-    private void fillDatabase(Map<String, List<String>> database, String dataFile) {
+    private void fillDatabase(Map<String, List<String>> database, String dataFile, int nb_columns) {
         String data = null;
         try {
             data = readDataFile(dataFile);
@@ -85,8 +74,22 @@ public class DatabaseUsers {
                     String[] columns = row.split(";");
                     List l = new LinkedList();
                     database.put(columns[0], l);
-                    for (int columnIndex = 1; columnIndex < columns.length; ++columnIndex) {
-                        l.add(columns[columnIndex]);
+                    for (int columnIndex = 1; columnIndex < nb_columns; ++columnIndex) {
+                        if (columnIndex < columns.length)
+                            l.add(columns[columnIndex]);
+                        else
+                        {
+                            switch (columnIndex) {
+                            case 2:
+                                l.add("0");
+                                break;
+                            case 3:
+                                l.add(columns[1]);
+                                break;
+                            default:
+                                l.add("");
+                            }
+                        }
                     }
                 }
             }
@@ -173,16 +176,30 @@ public class DatabaseUsers {
         refreshDataFile();
     }
 
-    public String printScores(String user) {
+    public String printScores(String winner) {
         String res = "SCORES";
         for (Map.Entry<String, List<String>> entry : users.entrySet()) {
             List<String> list = entry.getValue();
             res += '\n' + list.get(0) + " : ";
-            // TODO : set BOLD if on winner
-            res += list.get(1);
+            String user = list.get(1);
+            if (user.equals(winner))
+                res += "**";
+            res += user;
+            if (user.equals(winner))
+                res += "**";
             res += " victoires";
         }
         return res;
     }
 
+    public String rename(String id, String name) {
+        List<String> list = users.get(id);
+        if (list.size() > 2 && name.length() > 0)
+        {
+            list.set(2, name);
+            refreshDataFile();
+            return name;
+        }
+        return "";
+    }
 }

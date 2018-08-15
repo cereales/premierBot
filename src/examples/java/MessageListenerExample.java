@@ -186,7 +186,7 @@ public class MessageListenerExample extends PrivateTokenised
         }
         else if (msg.equals("!pendu") || msg.length() == 1)
         {
-            databaseUsers.contains(user, author.getName());
+            databaseUsers.addUser(user, author.getName());
             if (n < 0) {
                 try {
                     word = DataBase.getWord();
@@ -224,7 +224,9 @@ public class MessageListenerExample extends PrivateTokenised
                 if (n <= 0)
                 {
                     channel.sendMessage("Perdu. Le bon mot etait *" + word + "*.").queue();
-                    //TODO : add victory to proposer
+                    if (!wordProposerId.equals(""))
+                        databaseUsers.addPenduVictory(wordProposerId);
+                    channel.sendMessage(databaseUsers.printScores(wordProposerId)).queue();
                     setUnused();
                 }
                 else
@@ -271,6 +273,17 @@ public class MessageListenerExample extends PrivateTokenised
         {
             channel.sendMessage("Houra !").queue();
         }
+        else if (msg.startsWith("!rename "))
+        {
+            String newName = msg.split(" ")[1];
+            if (newName.indexOf(';') == -1)
+            {
+                databaseUsers.addUser(user, author.getName());
+                newName = databaseUsers.rename(user, newName);
+                if (newName.length() > 0)
+                    channel.sendMessage("Successfully renamed *" + newName + "*.").queue();
+            }
+        }
         else if (msg.equals("!help"))
         {
             channel.sendMessage("Commandes :\n" +
@@ -279,6 +292,7 @@ public class MessageListenerExample extends PrivateTokenised
                 "*!roll*\tLance un dé 6\n" +
                 "*!pendu*\tJouer au pendu\n" +
                 "*!score*\tAfficher les scores\n" +
+                "*!rename <new_name>*\tSe renommer\n" +
                 "*\\o/*\tSache qu'il en faut peu pour être heureux").queue();
         }
         /*
