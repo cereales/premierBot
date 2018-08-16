@@ -104,8 +104,6 @@ public class MessageListenerExample extends PrivateTokenised
     {
         //These are provided with every event in JDA
         JDA jda = event.getJDA();                       //JDA, the core of the api.
-        long responseNumber = event.getResponseNumber();//The amount of discord events that JDA has received since the last reconnect.
-        System.out.println("nb event receive since last reconnect: " + responseNumber);
 
         //Event specific information
         User author = event.getAuthor();                //The user that sent the message

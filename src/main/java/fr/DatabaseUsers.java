@@ -181,12 +181,13 @@ public class DatabaseUsers {
         String res = "SCORES";
         for (Map.Entry<String, List<String>> entry : users.entrySet()) {
             List<String> list = entry.getValue();
-            res += '\n' + list.get(0) + " : ";
-            String user = list.get(1);
-            if (user.equals(winner))
+            String id = entry.getKey();
+            String user = list.get(2);
+            res += '\n' + user + " : ";
+            if (id.equals(winner))
                 res += "**";
-            res += user;
-            if (user.equals(winner))
+            res += list.get(1);
+            if (id.equals(winner))
                 res += "**";
             res += " victoires, " + list.get(3) + " defaites";
         }
