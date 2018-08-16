@@ -42,6 +42,11 @@ public class MessageListenerExample extends PrivateTokenised
 
     private static DatabaseUsers databaseUsers = new DatabaseUsers();
 
+    private static String C_BASIC = "\033[0m";
+    private static String C_RED = "\033[31m";
+    private static String C_YELLOW = "\033[33m";
+    private static String C_BLUE = "\033[34m";
+
 
 
     /**
@@ -140,7 +145,14 @@ public class MessageListenerExample extends PrivateTokenised
 
 
 
-            System.out.printf("(%s)[%s]<%s>: %s\n", guild.getName(), textChannel.getName(), name, msg);
+            if (isOnCategory(event, C_JEUX)) {
+                if (bot)
+                    System.out.printf(C_YELLOW + "(%s)[%s]<%s>: %s\n" + C_BASIC, guild.getName(), textChannel.getName(), name, msg);
+                else
+                    System.out.printf("(%s)[%s]<%s>: %s\n", guild.getName(), textChannel.getName(), name, msg);
+            }
+            else
+                System.out.printf(C_BLUE + "(%s)[%s]<%s>: %s\n" + C_BASIC, guild.getName(), textChannel.getName(), name, msg);
         }
         else if (event.isFromType(ChannelType.PRIVATE)) //If this message was sent to a PrivateChannel
         {
@@ -156,7 +168,7 @@ public class MessageListenerExample extends PrivateTokenised
                 wordProposerId = user;
             }
 
-            System.out.printf("[PRIV]<%s>: %s\n", author.getName(), msg);
+            System.out.printf(C_RED + "[PRIV]<%s>: %s\n" + C_BASIC, author.getName(), msg);
         }
         else if (event.isFromType(ChannelType.GROUP))   //If this message was sent to a Group. This is CLIENT only!
         {
@@ -164,7 +176,7 @@ public class MessageListenerExample extends PrivateTokenised
             Group group = event.getGroup();
             String groupName = group.getName() != null ? group.getName() : "";  //A group name can be null due to it being unnamed.
 
-            System.out.printf("[GRP: %s]<%s>: %s\n", groupName, author.getName(), msg);
+            System.out.printf(C_RED + "[GRP: %s]<%s>: %s\n" + C_BASIC, groupName, author.getName(), msg);
         }
 
 
@@ -192,7 +204,7 @@ public class MessageListenerExample extends PrivateTokenised
                     try {
                         word = DataBase.getWord();
                         setNewWord(word, channel);
-                        System.out.println("New random word : " + word);
+                        System.out.println(C_YELLOW + "New random word : " + word + C_BASIC);
                     } catch (IOException e) {
                         e.printStackTrace();
                         setUnused();
