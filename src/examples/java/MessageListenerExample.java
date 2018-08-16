@@ -175,134 +175,139 @@ public class MessageListenerExample extends PrivateTokenised
         //Remember, in all of these .equals checks it is actually comparing
         // message.getContentDisplay().equals, which is comparing a string to a string.
         // If you did message.equals() it will fail because you would be comparing a Message to a String!
-        if (msg.equals("!ping"))
+        if (isOnCategory(event, C_JEUX))
         {
-            //This will send a message, "pong!", by constructing a RestAction and "queueing" the action with the Requester.
-            // By calling queue(), we send the Request to the Requester which will send it to discord. Using queue() or any
-            // of its different forms will handle ratelimiting for you automatically!
+            if (msg.equals("!ping"))
+            {
+                //This will send a message, "pong!", by constructing a RestAction and "queueing" the action with the Requester.
+                // By calling queue(), we send the Request to the Requester which will send it to discord. Using queue() or any
+                // of its different forms will handle ratelimiting for you automatically!
 
-            channel.sendMessage("pong!").queue();
-        }
-        else if (msg.equals("!pendu") || msg.length() == 1)
-        {
-            databaseUsers.addUser(user, author.getName());
-            if (n < 0) {
-                try {
-                    word = DataBase.getWord();
-                    setNewWord(word, channel);
-                    System.out.println("New random word : " + word);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    setUnused();
-                    channel.sendMessage("Echec de génération du mot. Essayez à nouveau.").queue();
-                }
-
-                channel.sendMessage("Pas de mot en cours.").queue();
+                channel.sendMessage("pong!").queue();
             }
-            if (n >= 0) {
-                if (msg.length() == 1)
-                {
-                    letterProposersId.add(user);
-
-                    msg = msg.toLowerCase();
-                    tmp = clear[0];
-                    boolean found = false;
-                    for (int i = 1; i < word.length(); ++i) {
-                        if (word.substring(i, i + 1).equals(msg) && !clear[i].equals(msg)) {
-                            found = true;
-                            clear[i] = msg;
-                        }
-                        tmp += " " + clear[i];
-                    }
-                    if (!found)
-                    {
-                        --n;
-                        wrong += msg;
-                    }
-                }
-                if (n <= 0)
-                {
-                    channel.sendMessage("Perdu. Le bon mot etait *" + word + "*.").queue();
-                    if (!wordProposerId.equals(""))
-                        databaseUsers.addPenduVictory(wordProposerId);
-                    for (String id : letterProposersId) {
-                        databaseUsers.addPenduDefeat(id);
-                    }
-                    channel.sendMessage(databaseUsers.printScores(wordProposerId)).queue();
-                    setUnused();
-                }
-                else
-                {
-                    channel.sendMessage("<" + n + " chances, (" + wrong + ")> " + tmp).queue();
-
-                    boolean gagne = true;
-                    for (int i = 1; i < word.length(); ++i) {
-                        if (clear[i].equals("\\_"))
-                            gagne = false;
-                    }
-                    if (gagne) {
-                        channel.sendMessage("Gagné!").queue();
-                        if (!wordProposerId.equals(user))
-                            databaseUsers.addPenduVictory(user);
-                        channel.sendMessage(databaseUsers.printScores(user)).queue();
-                        setUnused();
-                    }
-                }
-            }
-        }
-        else if (msg.equals("!score"))
-        {
-            channel.sendMessage(databaseUsers.printScores("")).queue();
-        }
-        else if (msg.equals("!roll"))
-        {
-            //In this case, we have an example showing how to use the Success consumer for a RestAction. The Success consumer
-            // will provide you with the object that results after you execute your RestAction. As a note, not all RestActions
-            // have object returns and will instead have Void returns. You can still use the success consumer to determine when
-            // the action has been completed!
-
-            Random rand = new Random();
-            int roll = rand.nextInt(6) + 1; //This results in 1 - 6 (instead of 0 - 5)
-            channel.sendMessage("Your roll: " + roll).queue(sentMessage ->  //This is called a lambda statement. If you don't know
-            {                                                               // what they are or how they work, try google!
-                if (roll < 3)
-                {
-                    channel.sendMessage("The roll for messageId: " + sentMessage.getId() + " wasn't very good... Must be bad luck!\n").queue();
-                }
-            });
-        }
-        else if (msg.equals("\\o/"))
-        {
-            channel.sendMessage("Houra !").queue();
-        }
-        else if (msg.startsWith("!rename "))
-        {
-            String newName = msg.split(" ")[1];
-            if (newName.indexOf(';') == -1)
+            else if ((msg.equals("!pendu") || msg.length() == 1) && isOnSalon(channel, S_PENDU))
             {
                 databaseUsers.addUser(user, author.getName());
-                newName = databaseUsers.rename(user, newName);
-                if (newName.length() > 0)
-                    channel.sendMessage("Successfully renamed *" + newName + "*.").queue();
+                if (n < 0) {
+                    try {
+                        word = DataBase.getWord();
+                        setNewWord(word, channel);
+                        System.out.println("New random word : " + word);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        setUnused();
+                        channel.sendMessage("Echec de génération du mot. Essayez à nouveau.").queue();
+                    }
+
+                    channel.sendMessage("Pas de mot en cours.").queue();
+                }
+                if (n >= 0) {
+                    if (msg.length() == 1)
+                    {
+                        letterProposersId.add(user);
+
+                        msg = msg.toLowerCase();
+                        tmp = clear[0];
+                        boolean found = false;
+                        for (int i = 1; i < word.length(); ++i) {
+                            if (word.substring(i, i + 1).equals(msg) && !clear[i].equals(msg)) {
+                                found = true;
+                                clear[i] = msg;
+                            }
+                            tmp += " " + clear[i];
+                        }
+                        if (!found)
+                        {
+                            --n;
+                            wrong += msg;
+                        }
+                    }
+                    if (n <= 0)
+                    {
+                        channel.sendMessage("Perdu. Le bon mot etait *" + word + "*.").queue();
+                        if (!wordProposerId.equals(""))
+                            databaseUsers.addPenduVictory(wordProposerId);
+                        for (String id : letterProposersId) {
+                            databaseUsers.addPenduDefeat(id);
+                        }
+                        channel.sendMessage(databaseUsers.printScores(wordProposerId)).queue();
+                        setUnused();
+                    }
+                    else
+                    {
+                        channel.sendMessage("<" + n + " chances, (" + wrong + ")> " + tmp).queue();
+
+                        boolean gagne = true;
+                        for (int i = 1; i < word.length(); ++i) {
+                            if (clear[i].equals("\\_"))
+                                gagne = false;
+                        }
+                        if (gagne) {
+                            channel.sendMessage("Gagné!").queue();
+                            if (!wordProposerId.equals(user))
+                                databaseUsers.addPenduVictory(user);
+                            channel.sendMessage(databaseUsers.printScores(user)).queue();
+                            setUnused();
+                        }
+                    }
+                }
+            }
+            else if (msg.equals("!score"))
+            {
+                channel.sendMessage(databaseUsers.printScores("")).queue();
+            }
+            else if (msg.equals("!roll"))
+            {
+                //In this case, we have an example showing how to use the Success consumer for a RestAction. The Success consumer
+                // will provide you with the object that results after you execute your RestAction. As a note, not all RestActions
+                // have object returns and will instead have Void returns. You can still use the success consumer to determine when
+                // the action has been completed!
+
+                Random rand = new Random();
+                int roll = rand.nextInt(6) + 1; //This results in 1 - 6 (instead of 0 - 5)
+                channel.sendMessage("Your roll: " + roll).queue(sentMessage ->  //This is called a lambda statement. If you don't know
+                {                                                               // what they are or how they work, try google!
+                    if (roll < 3)
+                    {
+                        channel.sendMessage("The roll for messageId: " + sentMessage.getId() + " wasn't very good... Must be bad luck!\n").queue();
+                    }
+                });
+            }
+            else if (msg.equals("\\o/"))
+            {
+                channel.sendMessage("Houra !").queue();
+            }
+            else if (msg.startsWith("!rename "))
+            {
+                String newName = msg.split(" ")[1];
+                if (newName.indexOf(';') == -1)
+                {
+                    databaseUsers.addUser(user, author.getName());
+                    newName = databaseUsers.rename(user, newName);
+                    if (newName.length() > 0)
+                        channel.sendMessage("Successfully renamed *" + newName + "*.").queue();
+                }
+            }
+            else if (msg.equals("!help"))
+            {
+                channel.sendMessage("Commandes :\n" +
+                    "*!help*\tObtenir la liste des commandes autorisées\n" +
+                    "*!ping*\tEssaye pour voir\n" +
+                    "*!roll*\tLance un dé 6\n" +
+                    "*!pendu*\tJouer au pendu\n" +
+                    "*!score*\tAfficher les scores\n" +
+                    "*!rename <new_name>*\tSe renommer\n" +
+                    "*\\o/*\tSache qu'il en faut peu pour être heureux").queue();
             }
         }
-        else if (msg.equals("!help"))
-        {
-            channel.sendMessage("Commandes :\n" +
-                "*!help*\tObtenir la liste des commandes autorisées\n" +
-                "*!ping*\tEssaye pour voir\n" +
-                "*!roll*\tLance un dé 6\n" +
-                "*!pendu*\tJouer au pendu\n" +
-                "*!score*\tAfficher les scores\n" +
-                "*!rename <new_name>*\tSe renommer\n" +
-                "*\\o/*\tSache qu'il en faut peu pour être heureux").queue();
-        }
-        /*
-        else if (!bot)
-        {
-            channel.sendMessage("hey salut").queue();
-        }
-        */
+    }
+
+    private boolean isOnCategory(MessageReceivedEvent event, String category) {
+        return event.getTextChannel().getParent().getId().equals(category);
+    }
+
+    private boolean isOnSalon(MessageChannel channel, String salon) {
+        return channel.getId().equals(salon);
     }
 
     private void setNewWord(String word, MessageChannel channel) {
