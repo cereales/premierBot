@@ -65,7 +65,7 @@ public class DatabaseUsers {
             ex.printStackTrace();
         }
         if (data.length() > 0) {
-            String[] rows = data.split("\n");
+            String[] rows = data.split("\r\n");
             for (int i = 1; i < rows.length; ++i) {
                 String row = rows[i];
                 if (row.length() > 0) {

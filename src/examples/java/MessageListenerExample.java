@@ -323,29 +323,29 @@ public class MessageListenerExample extends PrivateTokenised
     }
 
     private void setNewWord(String word, MessageChannel channel) {
-        n = 10;
-        wrong = "";
-        letterProposersId = new TreeSet();
-        clear = new String[word.length()];
-        clear[0] = word.substring(0, 1);
-        tmp = clear[0];
-        byte[] letters = word.getBytes(StandardCharsets.UTF_8);
-        int byteIndex = (letters[0] < 0) ? 2 : 1;
-        for (int stringIndex = 1; stringIndex < word.length(); ++stringIndex) {
-            byte letter = letters[byteIndex];
-            if (97 <= letter && letter <= 122)
-            {
-                clear[stringIndex] = "\\_";
+        if (word.length() > 1)
+        {
+            n = 10;
+            wrong = "";
+            letterProposersId = new TreeSet();
+            clear = new String[word.length()];
+            clear[0] = word.substring(0, 1);
+            tmp = clear[0];
+            byte[] letters = word.getBytes(StandardCharsets.UTF_8);
+            int byteIndex = (letters[0] < 0) ? 2 : 1;
+            for (int stringIndex = 1; stringIndex < word.length(); ++stringIndex) {
+                byte letter = letters[byteIndex];
+                if (97 <= letter && letter <= 122) {
+                    clear[stringIndex] = "\\_";
+                } else {
+                    if (letter < 0)
+                        ++byteIndex;
+                    clear[stringIndex] = word.substring(stringIndex, stringIndex + 1);
+                    channel.sendMessage("Caractère '" + clear[stringIndex] + "' non reconnu.").queue();
+                }
+                tmp += " " + clear[stringIndex];
+                ++byteIndex;
             }
-            else
-            {
-                if (letter < 0)
-                    ++byteIndex;
-                clear[stringIndex] = word.substring(stringIndex, stringIndex + 1);
-                channel.sendMessage("Caractère '" + clear[stringIndex] + "' non reconnu.").queue();
-            }
-            tmp += " " + clear[stringIndex];
-            ++byteIndex;
         }
         // (byte & 0xff) to see real code
         // ((char) byte) to print byte
