@@ -65,7 +65,7 @@ public class DatabaseUsers {
             ex.printStackTrace();
         }
         if (data.length() > 0) {
-            String[] rows = data.split("\r\n");
+            String[] rows = data.split("\n");
             for (int i = 1; i < rows.length; ++i) {
                 String row = rows[i];
                 if (row.length() > 0) {
@@ -74,7 +74,7 @@ public class DatabaseUsers {
                     database.put(columns[0], l);
                     for (int columnIndex = 1; columnIndex < nb_columns; ++columnIndex) {
                         if (columnIndex < columns.length)
-                            l.add(columns[columnIndex]);
+                            l.add(columns[columnIndex].split("\r")[0]);
                         else
                         {
                             switch (columnIndex) {
