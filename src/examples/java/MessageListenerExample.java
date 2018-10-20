@@ -16,6 +16,7 @@
 
 import fr.DataBase;
 import fr.DatabaseUsers;
+import fr.Html;
 import fr.PrivateTokenised;
 import net.dv8tion.jda.client.entities.Group;
 import net.dv8tion.jda.core.AccountType;
@@ -26,7 +27,9 @@ import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 
 import javax.security.auth.login.LoginException;
-import java.io.IOException;
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -200,7 +203,7 @@ public class MessageListenerExample extends PrivateTokenised
             else if ((msg.equals("!pendu") || msg.length() == 1) && isOnSalon(channel, S_PENDU))
             {
                 databaseUsers.addUser(user, author.getName());
-                if (n < 0) {
+                if (n < 0) {                                                    // Le mot n'existe pas
                     try {
                         word = DataBase.getWord();
                         setNewWord(word, channel);
@@ -213,8 +216,8 @@ public class MessageListenerExample extends PrivateTokenised
 
                     channel.sendMessage("Pas de mot en cours.").queue();
                 }
-                if (n >= 0) {
-                    if (msg.length() == 1)
+                if (n >= 0) {                                                   // Le mot existe
+                    if (msg.length() == 1)                                      // Proposition de lettre
                     {
                         letterProposersId.add(user);
 
@@ -234,9 +237,12 @@ public class MessageListenerExample extends PrivateTokenised
                             wrong += msg;
                         }
                     }
-                    if (n <= 0)
+                    if (n <= 0)                                                 // Defaite suite à la proposition
                     {
                         channel.sendMessage("Perdu. Le bon mot etait *" + word + "*.").queue();
+                        Html def = new Html(word);
+                        if (def.hasDef())
+                            channel.sendMessage(def.toString()).queue();
                         if (!wordProposerId.equals(""))
                             databaseUsers.addPenduVictory(wordProposerId);
                         for (String id : letterProposersId) {
@@ -254,7 +260,10 @@ public class MessageListenerExample extends PrivateTokenised
                             if (clear[i].equals("\\_"))
                                 gagne = false;
                         }
-                        if (gagne) {
+                        if (gagne) {                                            // Victoire suite à la proposition
+                            Html def = new Html(word);
+                            if (def.hasDef())
+                                channel.sendMessage(def.toString()).queue();
                             channel.sendMessage("Gagné!").queue();
                             if (!wordProposerId.equals(user))
                                 databaseUsers.addPenduVictory(user);
@@ -300,6 +309,55 @@ public class MessageListenerExample extends PrivateTokenised
                         channel.sendMessage("Successfully renamed *" + newName + "*.").queue();
                 }
             }
+            else if (msg.startsWith("!def "))
+            {
+                Html test = new Html(msg.split(" ")[1]);
+                channel.sendMessage(test.toString()).queue();
+            }
+            else if (msg.startsWith("!raise "))
+            {
+                // read file
+                String readFile = "";
+                try {
+                    FileInputStream fis = null;
+                    FileChannel fc = null;
+                    try {
+                        fis = new FileInputStream(new File("log.txt"));
+                        fc = fis.getChannel();
+                        int size = (int)fc.size();
+                        ByteBuffer bBuff = ByteBuffer.allocate(size);
+                        fc.read(bBuff);
+                        bBuff.flip();
+                        byte[] tabByte = bBuff.array();
+                        readFile = new String(tabByte);
+                    } catch (FileNotFoundException ex) {
+                        ex.printStackTrace();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    } finally {
+                        if (fis != null) fis.close();
+                        if (fc != null) fc.close();
+                    }
+                } catch (IOException ex) {}
+
+                if (readFile.length() < 100000) {
+                    // write file
+                    FileWriter fw;
+                    try {
+                        fw = new FileWriter(new File("log.txt"));
+                        fw.write(readFile + msg.split(" ")[1] + "\n");
+                        fw.close();
+                        channel.sendMessage("Raised.").queue();
+                    } catch (FileNotFoundException ex) {
+                        ex.printStackTrace();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                } else {
+                    System.out.println("Taille de la pile : " + readFile.length() + "/100000");
+                    channel.sendMessage("Pile pleine !").queue();
+                }
+            }
             else if (msg.equals("!help"))
             {
                 channel.sendMessage("Commandes :\n" +
@@ -307,6 +365,8 @@ public class MessageListenerExample extends PrivateTokenised
                     "*!ping*\tEssaye pour voir\n" +
                     "*!roll*\tLance un dé 6\n" +
                     "*!pendu*\tJouer au pendu\n" +
+                    "*!def <mot>*\tCherche la définition du mot\n" +
+                    "*!raise <mot>*\tEnvoie un rapport d'erreur consernant le mot\n" +
                     "*!score*\tAfficher les scores\n" +
                     "*!rename <new_name>*\tSe renommer\n" +
                     "*\\o/*\tSache qu'il en faut peu pour être heureux").queue();
