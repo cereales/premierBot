@@ -42,10 +42,10 @@ public class MessageListenerExample extends PrivateTokenised
 
     private static DatabaseUsers databaseUsers = new DatabaseUsers();
 
-    private static String C_BASIC = "\033[0m";
-    private static String C_RED = "\033[31m";
-    private static String C_YELLOW = "\033[33m";
-    private static String C_BLUE = "\033[34m";
+    private static String C_BASIC = "\033[0m"; // User in JEUX
+    private static String C_RED = "\033[31m"; // private
+    private static String C_YELLOW = "\033[33m"; // Bot in JEUX
+    private static String C_BLUE = "\033[34m"; // No matters
 
 
 
@@ -187,7 +187,7 @@ public class MessageListenerExample extends PrivateTokenised
         //Remember, in all of these .equals checks it is actually comparing
         // message.getContentDisplay().equals, which is comparing a string to a string.
         // If you did message.equals() it will fail because you would be comparing a Message to a String!
-        if (isOnCategory(event, C_JEUX))
+        if (isOnSalon(channel, S_PENDU))
         {
             if (msg.equals("!ping"))
             {
@@ -311,7 +311,8 @@ public class MessageListenerExample extends PrivateTokenised
                     "*!rename <new_name>*\tSe renommer\n" +
                     "*\\o/*\tSache qu'il en faut peu pour être heureux").queue();
             }
-        }
+        } else if (msg.equals("!help"))
+            channel.sendMessage("I am not allowed to respond in this channel.").queue();
     }
 
     private boolean isOnCategory(MessageReceivedEvent event, String category) {

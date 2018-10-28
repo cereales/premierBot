@@ -16,7 +16,8 @@ import java.util.*;
  */
 public class DatabaseUsers {
     private Map<String, List<String>> users;
-    private final String usersFile = "src/main/java/fr/databaseUsers.txt";
+    // private final String usersFile = "src/main/java/fr/databaseUsers.txt";
+    private final String usersFile = "databaseUsers.txt";
 
     private static final String DATABASE_STRUCT = "LOGIN;NAME;VICTOIRES;USERNAME;DEFAITES";
 
