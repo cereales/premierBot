@@ -242,7 +242,7 @@ public class MessageListenerExample extends PrivateTokenised
                         channel.sendMessage("Perdu. Le bon mot etait *" + word + "*.").queue();
                         Html def = new Html(word);
                         if (def.hasDef())
-                            channel.sendMessage(def.toString()).queue();
+                            channel.sendMessage(def.toShortString()).queue();
                         if (!wordProposerId.equals(""))
                             databaseUsers.addPenduVictory(wordProposerId);
                         for (String id : letterProposersId) {
@@ -263,7 +263,7 @@ public class MessageListenerExample extends PrivateTokenised
                         if (gagne) {                                            // Victoire suite à la proposition
                             Html def = new Html(word);
                             if (def.hasDef())
-                                channel.sendMessage(def.toString()).queue();
+                                channel.sendMessage(def.toShortString()).queue();
                             channel.sendMessage("Gagné!").queue();
                             if (!wordProposerId.equals(user))
                                 databaseUsers.addPenduVictory(user);

@@ -38,7 +38,6 @@ public class Html {
     }
 
     private String definition(String def) {
-        System.out.println("def of  " + def);
         def = def.replaceAll("&nbsp;", " ");
         def = layoutBaliseDefinition(def, "Exemple");
         def = layoutBaliseDefinition(def, "Remarque");
@@ -99,15 +98,29 @@ public class Html {
         return source;
     }
 
-    @Override
-    public String toString() {
+    public String toShortString(boolean small) {
         if (!hasDef())
             return "**" + keyword + "** :\nPas de définition disponible ...";
         String res = "**" + keyword + "** :";
-        for (String def: definitions) {
-            res += "\n- " + def;
+        if (small) {
+            res += "\n- " + definitions.get(0);
+            if (definitions.size() > 1)
+                res += "\n- [ " + (definitions.size() - 1) + " autres définitions ] ...";
+        } else {
+            for (String def: definitions) {
+                res += "\n- " + def;
+            }
         }
         return res;
+    }
+
+    public String toShortString() {
+        return toShortString(true);
+    }
+
+    @Override
+    public String toString() {
+        return toShortString(false);
     }
 
     public boolean hasDef() {
