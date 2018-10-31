@@ -18,6 +18,12 @@ public class Html {
             System.out.println("definition from https://www.larousse.fr/dictionnaires/francais/" + keyword);
             String htmlResponse = get("https://www.larousse.fr/dictionnaires/francais/" + keyword);
 
+            int nameIndex = htmlResponse.indexOf("<h2 class=\"AdresseDefinition\">");
+            if (nameIndex != -1) {
+                String name = htmlResponse.substring(nameIndex, htmlResponse.indexOf("</h2>", nameIndex) + 5);
+                this.keyword = retirerBalises(name).replaceAll("&nbsp;", "");
+            }
+
             int definitionsIndex = htmlResponse.indexOf("<ul class=\"Definitions\">");
             if (definitionsIndex == -1)
                 return;
